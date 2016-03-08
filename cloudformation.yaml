@@ -1,6 +1,6 @@
 ---
 - name: provision stack
-  hosts: localhost
+  hosts: all
   connection: local
   tasks:
 
@@ -66,7 +66,7 @@
 
   - name: Create local zip
     local_action: >
-      shell cd ./lambda && zip -r ../zip/reds-{{ time_token }}.zip ./*
+      shell CWD=$(pwd) && cd ./lambda && zip -r ${CWD}/zip/reds-{{ time_token }}.zip ./*
 
   - name: Upload python files to S3 bucket
     local_action: >
