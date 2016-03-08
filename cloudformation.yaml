@@ -15,15 +15,15 @@
 
   - name: Generate CloudFormation templates from troposphere
     local_action: >
-      shell python {{ item }} > ./json/{{ item | basename | replace('.py', '.json') }}
+      shell python {{ item }} > {{ playbook_dir }}/json/{{ item | basename | replace('.py', '.json') }}
     with_fileglob:
-      - ./templates/*.py
+      - "{{ playbook_dir }}/templates/*.py"
 
   - name: Validate the cloudformation descriptions
     local_action: >
         shell aws cloudformation validate-template --region {{ region }} --template-body file://{{ item }} --output text
     with_fileglob:
-      - ./json/*.json
+      - "{{ playbook_dir }}/json/*.json"
 
   - name: set fact for time_token
     set_fact: time_token={{ hostvars[inventory_hostname]['ansible_date_time']['iso8601'] }}
@@ -33,7 +33,7 @@
         stack_name="{{ stack_prefix }}-role"
         state=present
         region="{{region}}"
-        template=./json/iam-assets.json
+        template={{ playbook_dir }}/json/iam-assets.json
     args:
         template_parameters:
             RdsInstance: "{{ rds_identifier }}"
@@ -44,7 +44,7 @@
         stack_name="{{ stack_prefix }}-bucket"
         state=present
         region="{{region}}"
-        template=./json/s3.json
+        template={{ playbook_dir }}/json/s3.json
     register: s3
 
   - name: Create Alarms
@@ -52,7 +52,7 @@
         stack_name="{{ stack_prefix }}-alarms"
         state=present
         region="{{region}}"
-        template=./json/alarms.json
+        template={{ playbook_dir }}/json/alarms.json
     args:
         template_parameters:
             RdsInstance: "{{ rds_identifier }}"
@@ -65,18 +65,18 @@
     register: alarms
 
   - name: Write output of the alarm names to vars
-    copy: content="---\nalarm_high{{ ':' }} {{ alarms['stack_outputs']['UpAlarm'] }}\nalarm_low{{ ':' }} {{ alarms['stack_outputs']['DownAlarm'] }}\nalarm_credits{{ ':' }} {{ alarms['stack_outputs']['CreditLowAlarm'] }}\n..." dest="./tmp/alarms.yaml"
+    copy: content="---\nalarm_high{{ ':' }} {{ alarms['stack_outputs']['UpAlarm'] }}\nalarm_low{{ ':' }} {{ alarms['stack_outputs']['DownAlarm'] }}\nalarm_credits{{ ':' }} {{ alarms['stack_outputs']['CreditLowAlarm'] }}\n..." dest="{{ playbook_dir }}/tmp/alarms.yaml"
 
   - name: Create local zip
     local_action: >
-      shell CWD=$(pwd) && cd ./lambda && zip -r ${CWD}/tmp/reds-{{ time_token }}.zip ./* && zip -j ${CWD}/tmp/reds-{{ time_token }}.zip ${CWD}/vars.yaml ${CWD}/tmp/alarms.yaml
+      shell cd {{ playbook_dir }}/lambda && zip -r {{ playbook_dir }}/tmp/reds-{{ time_token }}.zip ./* && zip -j {{ playbook_dir }}/tmp/reds-{{ time_token }}.zip ${CWD}/vars.yaml {{ playbook_dir }}/tmp/alarms.yaml
 
   - name: Upload python files to S3 bucket
     local_action: >
-      shell aws s3 cp ./tmp/reds-{{ time_token }}.zip s3://{{ s3['stack_outputs']['BucketName'] }}
+      shell aws s3 cp {{ playbook_dir }}/tmp/reds-{{ time_token }}.zip s3://{{ s3['stack_outputs']['BucketName'] }}
 
   - name: Clean up after ourselves
-    file: path="./tmp/{{ item }}" state=absent
+    file: path="{{ playbook_dir }}/tmp/{{ item }}" state=absent
     with_items:
       - reds-{{ time_token }}.zip
       - alarms.yaml
@@ -86,7 +86,7 @@
         stack_name="{{ stack_prefix }}-lambda"
         state=present
         region="{{region}}"
-        template=./json/lambda-function.json
+        template={{ playbook_dir }}/json/lambda-function.json
     args:
         template_parameters:
             TimeToken: "{{ time_token }}"
