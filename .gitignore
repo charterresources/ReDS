@@ -6,3 +6,4 @@ htmlcov
 json/
 zip/
 *.pyc
+tmp/

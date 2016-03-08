@@ -62,18 +62,21 @@
     register: alarms
 
   - name: Write output of the alarm names to vars
-    copy: content="---\nalarm_high{{ ':' }} {{ alarms['stack_outputs']['UpAlarm'] }}\nalarm_low{{ ':' }} {{ alarms['stack_outputs']['DownAlarm'] }}\nalarm_credits{{ ':' }} {{ alarms['stack_outputs']['CreditLowAlarm'] }}\n..." dest="./lambda/alarms.yaml"
+    copy: content="---\nalarm_high{{ ':' }} {{ alarms['stack_outputs']['UpAlarm'] }}\nalarm_low{{ ':' }} {{ alarms['stack_outputs']['DownAlarm'] }}\nalarm_credits{{ ':' }} {{ alarms['stack_outputs']['CreditLowAlarm'] }}\n..." dest="./tmp/alarms.yaml"
 
   - name: Create local zip
     local_action: >
-      shell CWD=$(pwd) && cd ./lambda && zip -r ${CWD}/zip/reds-{{ time_token }}.zip ./*
+      shell CWD=$(pwd) && cd ./lambda && zip -r ${CWD}/tmp/reds-{{ time_token }}.zip ./* && zip -j ${CWD}/tmp/reds-{{ time_token }}.zip ${CWD}/vars.yaml ${CWD}/tmp/alarms.yaml
 
   - name: Upload python files to S3 bucket
     local_action: >
-      shell aws s3 cp ./zip/reds-{{ time_token }}.zip s3://{{ s3['stack_outputs']['BucketName'] }}
+      shell aws s3 cp ./tmp/reds-{{ time_token }}.zip s3://{{ s3['stack_outputs']['BucketName'] }}
 
   - name: Clean up after ourselves
-    file: path="./zip/reds-{{ time_token }}.zip" state=absent
+    file: path="./tmp/{{ item }}" state=absent
+    with_items:
+      - reds-{{ time_token }}.zip
+      - alarms.yaml
 
   - name: Create Lambda Function
     cloudformation: >
