@@ -69,7 +69,7 @@
 
   - name: Create local zip
     local_action: >
-      shell cd {{ playbook_dir }}/lambda && zip -r {{ playbook_dir }}/tmp/reds-{{ time_token }}.zip ./* && zip -j {{ playbook_dir }}/tmp/reds-{{ time_token }}.zip ${CWD}/vars.yaml {{ playbook_dir }}/tmp/alarms.yaml
+      shell cd {{ playbook_dir }}/lambda && zip -r {{ playbook_dir }}/tmp/reds-{{ time_token }}.zip ./* && zip -j {{ playbook_dir }}/tmp/reds-{{ time_token }}.zip {{ playbook_dir }}/vars.yaml {{ playbook_dir }}/tmp/alarms.yaml
 
   - name: Upload python files to S3 bucket
     local_action: >
