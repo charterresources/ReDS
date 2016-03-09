@@ -86,10 +86,6 @@
     local_action: >
       shell aws s3 cp {{ playbook_dir }}/tmp/reds-{{ time_token }}.zip s3://{{ s3['stack_outputs']['BucketName'] }}
 
-  - name: Clean up after ourselves
-    file: path="{{ playbook_dir }}/{{ item }}" state=absent
-    with_items: working_dirs
-
   - name: Create Lambda Function
     cloudformation: >
         stack_name="{{ stack_prefix }}-lambda"
@@ -103,6 +99,10 @@
             RdsInstance: "{{ rds_identifier }}"
             LambdaRole: "{{ iam['stack_outputs']['LambdaRole'] }}"
     register: lambda
+
+  - name: Clean up after ourselves
+    file: path="{{ playbook_dir }}/{{ item }}" state=absent
+    with_items: working_dirs
 
   - name: "Add reminder to manually set the recurring "
     debug: msg="~~~ Reminder!! - Go set the recurring lambda call manually - https://github.com/mediatemple/ReDS ~~~"
