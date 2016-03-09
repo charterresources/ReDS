@@ -73,12 +73,10 @@
     copy: content="---\nalarm_high{{ ':' }} {{ alarms['stack_outputs']['UpAlarm'] }}\nalarm_low{{ ':' }} {{ alarms['stack_outputs']['DownAlarm'] }}\nalarm_credits{{ ':' }} {{ alarms['stack_outputs']['CreditLowAlarm'] }}\n..." dest="{{ playbook_dir }}/tmp/alarms.yaml"
 
   - name: Unzip deps
-    local_action: >
-      shell unzip {{ playbook_dir }}/lambda/deps.zip {{ playbook_dir }}/lambda
+    unarchive: src={{ playbook_dir }}/deps.zip {{ playbook_dir }}/lambda
 
   - name: Copy script into working folder
-    local_action: >
-      shell cp {{ playbook_dir }}/reds.py {{ playbook_dir }}/lambda/reds.py
+    copy: src={{ playbook_dir }}/reds.py dest={{ playbook_dir }}/lambda/reds.py
 
   - name: Create local zip
     local_action: >
