@@ -4,6 +4,6 @@ htmlcov
 ._*
 .DS*
 json/
-zip/
 *.pyc
 tmp/
+lambda/

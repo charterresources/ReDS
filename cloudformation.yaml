@@ -12,6 +12,7 @@
     with_items:
       - json
       - tmp
+      - lambda
 
   - name: Generate CloudFormation templates from troposphere
     local_action: >
@@ -66,6 +67,14 @@
 
   - name: Write output of the alarm names to vars
     copy: content="---\nalarm_high{{ ':' }} {{ alarms['stack_outputs']['UpAlarm'] }}\nalarm_low{{ ':' }} {{ alarms['stack_outputs']['DownAlarm'] }}\nalarm_credits{{ ':' }} {{ alarms['stack_outputs']['CreditLowAlarm'] }}\n..." dest="{{ playbook_dir }}/tmp/alarms.yaml"
+
+  - name: Unzip deps
+    local_action: >
+      shell unzip {{ playbook_dir }}/lambda/deps.zip {{ playbook_dir }}/lambda
+
+  - name: Copy script into working folder
+    local_action: >
+      shell cp {{ playbook_dir }}/reds.py {{ playbook_dir }}/lambda/reds.py
 
   - name: Create local zip
     local_action: >
