@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from troposphere import Template, Parameter, awslambda, Join, Ref, Output
+from troposphere import Template, Parameter, awslambda, GetAtt, Join, Ref, Output
 t = Template()
 
 rds_instance = t.add_parameter(Parameter(
@@ -46,6 +46,11 @@ t.add_output([
         'LambdaFunction',
         Description='ReDS Lambda Function',
         Value=Ref(lambda_function),
+    ),
+    Output(
+        'LambdaFunctionArn',
+        Description='ReC2 Lambda Function ARN',
+        Value=GetAtt(lambda_function.title, 'Arn')
     )
 ])
 
