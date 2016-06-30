@@ -49,7 +49,7 @@ t.add_output([
     ),
     Output(
         'LambdaFunctionArn',
-        Description='ReC2 Lambda Function ARN',
+        Description='ReDS Lambda Function ARN',
         Value=GetAtt(lambda_function.title, 'Arn')
     )
 ])
