@@ -16,7 +16,7 @@
 
   - name: Create the temporary directories
     file: dest={{ item }} state=directory
-    with_items: working_dirs
+    with_items: "{{ working_dirs }}"
 
   - name: Generate CloudFormation templates from troposphere
     local_action: >
@@ -101,11 +101,17 @@
             LambdaRole: "{{ iam['stack_outputs']['LambdaRole'] }}"
     register: lambda
 
+  - name: Create Event
+    cloudformation: >
+        stack_name="{{ stack_prefix }}-event-source"
+        state=present
+        region="{{region}}"
+        template={{ playbook_dir }}/json/event-source.json
+    args:
+        template_parameters:
+            LambdaArn: "{{ lambda['stack_outputs']['LambdaFunctionArn'] }}"
+    register: lambda
+
   - name: Clean up after ourselves
     file: path="{{ playbook_dir }}/{{ item }}" state=absent
-    with_items: working_dirs
-
-  - name: "Add reminder to manually set the recurring "
-    debug: msg="~~~ Reminder!! - Go set the recurring lambda call manually - https://github.com/mediatemple/ReDS ~~~"
-    with_sequence: start=0 end=3
-...
+    with_items: "{{ working_dirs }}"
