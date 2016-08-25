@@ -19,7 +19,6 @@ Features:
 Requirements:
 - run **make prep** to install dependencies
 - only works on multi-AZ RDS (Single AZ instances get taken offline during resize - not good!)
-- Manually configure repeating source after install via Lambda console - there is no automated way to do this yet, unfortunately - but only one time (see below for instructions!)
 
 Tests
 - run **make test**
